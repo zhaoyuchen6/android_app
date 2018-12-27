@@ -1,0 +1,158 @@
+/**
+ * Created by zhaoyuchen on 2018/08/08.
+ * 数据埋点,aui组件事件监听
+ */
+// import Control from "./config/control.json";
+// import ControlEvent from "./config/event.json";
+const internalRE = /^(?:pre-)?hook:/;
+export default {
+  install(Vue, pluginOption = {}) {
+    window.auiTime = 0;
+    window.inputTime = 0;
+    window.coordinates = {};
+    var method = pluginOption.type;
+    const original = Vue.prototype[method];
+    if (original) {
+      Vue.prototype[method] = function (...args) {
+        const res = original.apply(this, args);
+        auiEventListeners(this, args[0], args.slice(1));
+        return res;
+      };
+    }
+
+    function auiEventListeners(vm, eventName, payload) {
+      if (window.bFlag && typeof eventName === 'string' && !internalRE.test(eventName)) {
+        var tag = vm.$options._componentTag;
+        // if (ControlEvent.indexOf(eventName) === -1) {
+        //   return;
+        // }
+        // if (Control.indexOf(tag) === -1) {
+        //   return;
+        // }
+        if (eventName === "focus") {
+          window.auiTime = new Date();
+        } else if (eventName === "input") {
+          window.inputTime = new Date();
+        }
+        if (eventName === 'click') {
+          if (vm.$vnode.data != undefined && vm.$vnode.data.on != undefined && vm.$vnode.data.on.dblclick != undefined) {
+            return;
+          }
+          getControlInfo(vm, eventName, payload, "点击按钮");
+        } else if (eventName === 'blur') {
+          if (tag === "aui-select" || tag === "aui-select-popover") {
+            return;
+          }
+          getControlInfo(vm, eventName, payload, "输入框赋值");
+        } else if (eventName === "selectedItem") {
+          if (tag === "aui-select" || tag === "aui-select-popover") {
+            getControlInfo(vm, eventName, payload, "下拉框赋值");
+          }
+        } else if (eventName === "input") {
+          if (tag === "aui-date-picker") {
+            getControlInfo(vm, eventName, payload, "日期框赋值");
+          }
+        } else if (eventName === "change") {
+          if (tag === "aui-checkbox" || tag === "aui-checkbox-group" || tag === "aui-radio" || tag === "aui-radio-group" || tag === "aui-switch") {
+            getControlInfo(vm, eventName, payload, "单选按钮");
+          }
+        } else if (eventName === "on-custom-comp") {
+          if (tag === "aui-table") {
+            getControlInfo(vm, eventName, payload, "点击table选项");
+          }
+        } else if (eventName === "selected") {
+          if (tag === "check-box-card-min") {
+            getControlInfo(vm, eventName, payload, "checkBoxCardMin多选");
+          }
+        }
+      }
+    }
+
+    function getControlInfo(vm, eventName, payload, eventDesc) {
+      var isTradePage = vm.$parent;
+      while (isTradePage != undefined && isTradePage.$options != undefined && isTradePage.$options._componentTag != undefined) {
+        isTradePage = isTradePage.$parent;
+      }
+      if (isTradePage != undefined && isTradePage.constructor.extendOptions.name != undefined && isTradePage.constructor.extendOptions.name != "trade-menu") {
+        //配置组件信息
+        var pageControlInfo = {};
+        var tag = vm.$options._componentTag;
+        pageControlInfo['cid'] = window.deviceInfo['deviceNum'] + new Date().getTime();
+        pageControlInfo['controlNum'] = "";
+        pageControlInfo['controlType'] = tag;
+        //pageControlInfo['controlName'] = vm.$el.innerText;
+        //pageControlInfo['controlName'] = vm.$el.textContent.trim().split(" ")[0];
+        pageControlInfo['controlName'] = "";
+        pageControlInfo['controlCode'] = "";
+        if (vm.$vnode.data != undefined && vm.$vnode.data.model != undefined && vm.$vnode.data.model.expression != undefined) {
+          pageControlInfo['controlCode'] = vm.$vnode.data.model.expression;
+        }
+        pageControlInfo['eventType'] = eventName;
+        pageControlInfo['eventDesc'] = eventDesc;
+        if (window.auiTime != 0) {
+          pageControlInfo['handleTime'] = (new Date() - window.auiTime) / 1000;
+        } else {
+          if (window.inputTime != 0) {
+            pageControlInfo['handleTime'] = (new Date() - window.inputTime) / 1000;
+          } else {
+            pageControlInfo['handleTime'] = 0.1;
+          }
+        }
+        if (tag === "aui-select" || tag === "aui-select-popover") {
+          pageControlInfo['controlValue'] = payload[0].label;
+        } else if (tag === "aui-table" || tag === "aui-date-picker") {
+          pageControlInfo['controlValue'] = payload[0];
+        } else {
+          pageControlInfo['controlValue'] = vm.$vnode.data.model === undefined ? "" : vm.$vnode.data.model.value;
+        }
+        var coordinates = {};
+        coordinates['relativeScreen'] = window.coordinates['relativeScreen'];
+        coordinates['relativeClient'] = window.coordinates['relativeClient'];
+        coordinates['relativeControl'] = window.coordinates['relativeControl'];
+        pageControlInfo['coordinates'] = coordinates;
+        var name = isTradePage.constructor.extendOptions.name;
+        for (var i = window.tradeInfo['tradePageList'].length - 1; i >= 0; i--) {
+          if (name === window.tradeInfo['tradePageList'][i]['pageName']) {
+            pageControlInfo['controlNum'] = window.tradeInfo['tradePageList'][i]['pageControlList'].length + 1;
+            window.tradeInfo['tradePageList'][i]['pageControlList'].push(pageControlInfo);
+            break;
+          }
+        }
+        window.auiTime = 0;
+        window.inputTime = 0;
+      }
+    }
+  },
+  mounted() {
+    if (window.bFlag && this.$options != undefined && this.$options._componentTag === undefined) {
+      this.$children && addChildrenListener(this.$children);
+    }
+  }
+};
+
+function addChildrenListener(childrens) {
+  for (let i = 0; i < childrens.length; i++) {
+    if (JSON.stringify(childrens[i]._events) != "{}") {
+      childrens[i].$el.addEventListener("focus", function() {
+        if (window.bFlag) {
+          window.auiTime = new Date();
+        }
+      });
+      childrens[i].$el.addEventListener("mousedown", function($event) {
+        if (window.bFlag) {
+          var tag = childrens[i].$options._componentTag;
+          if (tag != "aui-admin-input" && tag != "aui-counter-input" && tag != "aui-currency-input" &&
+          tag != "aui-number-input" && tag != "aui-text-input" && tag != "aui-text-area") {
+            window.auiTime = new Date();
+          }
+          var eve = event || window.event;
+          window.coordinates['relativeScreen'] = eve.screenX + "," + eve.screenY;
+          window.coordinates['relativeClient'] = eve.clientX + "," + eve.clientY;
+          window.coordinates['relativeControl'] = eve.offsetX + "," + eve.offsetY;
+          $event.cancelBubble = true;
+        }
+      });
+    }
+    childrens[i].$children && addChildrenListener(childrens[i].$children);
+  }
+}

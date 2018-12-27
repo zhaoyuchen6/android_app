@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="22px" viewBox="0 0 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 42 (36781) - http://www.bohemiancoding.com/sketch -->
+    <title>icon_goumaichenggong</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="13.75" height="13.75"></rect>
+    </defs>
+    <g id="E_5_购买理财产品流程" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="iPad-Pro-Portrait" transform="translate(-68.000000, -236.000000)">
+            <g id="icon_goumaichenggong" transform="translate(68.000000, 236.000000)">
+                <rect id="Rectangle-2" fill="#FF5C5C" x="0" y="0" width="22" height="22" rx="11"></rect>
+                <g id="Group-2" transform="translate(4.125000, 4.583333)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="Rectangle-2" fill="#F7F7F7" opacity="0" xlink:href="#path-1"></use>
+                    <polygon id="Rectangle-3" fill="#FFFFFF" mask="url(#mask-2)" transform="translate(6.875000, 5.500000) rotate(45.000000) translate(-6.875000, -5.500000) " points="8.70833333 -1.55505238e-13 10.0833333 -1.55505238e-13 10.0833333 11 3.66666667 11 3.66666667 9.625 8.06015212 8.97681878"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="./static/font-awaresome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./static/font-awaresome/style.css">
+    <link rel="stylesheet" href="./static/font-icomoon/style.css">
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <link rel="stylesheet" href="./static/js/swiper/swiper-4.2.2.min.css">
+    <script type="text/javascript" src="./static/js/swiper/swiper-4.2.2.min.js"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=G7UbCxVWYQl1A4viR6gG2UoNG9y3bdyp"></script>
+    <!--浏览器兼容模式用最新的文档渲染模式-->
+    <meta http-equiv="X-UA-Compatible" content ="IE=edge"/>
+    <title></title>
+    <style type="text/css">
+      #Loading {
+        top:50%;
+        left:50%;
+        position: absolute;
+        -webkit-transform: translateY(-50%)  translateX(-50%);
+        transform: translateY(-50%)  translateX(-50%);
+        z-index:100;
+      }
+      @-webkit-keyframes ball-beat {
+        50% {
+          opacity: 0.2;
+          -webkit-transform: scale(0.75);
+          transform: scale(0.75); }
+
+        100% {
+          opacity: 1;
+          -webkit-transform: scale(1);
+          transform: scale(1); } }
+
+      @keyframes ball-beat {
+        50% {
+          opacity: 0.2;
+          -webkit-transform: scale(0.75);
+          transform: scale(0.75); }
+
+        100% {
+          opacity: 1;
+          -webkit-transform: scale(1);
+          transform: scale(1); } }
+
+      .ball-beat > div {
+        background-color: #279fcf;
+        width: 15px;
+        height: 15px;
+        border-radius: 100% !important;
+        margin: 2px;
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+        display: inline-block;
+        -webkit-animation: ball-beat 0.7s 0s infinite linear;
+        animation: ball-beat 0.7s 0s infinite linear; }
+      .ball-beat > div:nth-child(2n-1) {
+        -webkit-animation-delay: 0.35s !important;
+        animation-delay: 0.35s !important; }
+    </style>
+  </head>
+  <body>
+  <div id="Loading">
+    <!--<div class="loader-inner ball-beat">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>-->
+  </div>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  <script src="./static/http.js">
+  </script>
+  </body>
+</html>

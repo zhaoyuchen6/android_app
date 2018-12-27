@@ -1,0 +1,69 @@
+// 主题样式表
+// app页面
+
+
+@theme-color : #3CBFEF;//主题颜色-蓝色
+@theme-color-font:@theme-color;//主题字体颜色-蓝色
+@theme-color-bg:@theme-color; //主题背景颜色-蓝色
+@title-color-font:#ffffff;  //标题字体颜色 -白色
+@slide-bg-color : #273238;//左侧菜单背景-灰黑色
+@slide-bg-border : #6C6F70;//左侧菜单边框-浅黑色
+@slide-bg-active : #3C464C;//左侧菜单边框-浅灰色
+@slide-color : #CDCDCD;//左侧菜单字体颜色-浅浅灰色
+@slide-color-active :@theme-color;//左侧菜单激活字体颜色-蓝色
+@home-bg-color:#f7f7f7; //home模块背景色
+@home-color-device:@theme-color; //homo模块 设备颜色
+@home-color-satisfied:@theme-color;  //home模块 满意度笑脸颜色
+@home-color-border:#EAEAEA;//home模块 边框颜色
+@visit-level-color:#000000;  //来访客户 等级颜色
+@visit-info-color:@theme-color;   //来访客户 信息颜色
+@point-color-outside:@theme-color;   //渐变点-外侧 (内外相同则无渐变)
+@point-color-inside:@theme-color; //渐变点-内侧(内外相同则无渐变)
+@monitor-border-color:#E6E6E6;//排队监控边框色
+
+
+
+
+//@theme-color:#7a051e;//主题颜色-深红色
+//@theme-color-font:#7a051e;//主题字体颜色-深红
+//@theme-color-bg:#f5e5aa; //主题背景颜色-黄色
+//@title-color-font:#7a051e;  //标题字体颜色
+//@slide-bg-color : #7a051e;//左侧菜单背景-深红色
+//@slide-bg-active : #cfa777;//左侧菜单背景-激活-黄色
+//@slide-bg-border : #FFF1E0;//左侧菜单边框-浅黄色
+//@slide-color : #fff1e0;//左侧菜单字体颜色-浅黄色
+//@slide-color-active : @slide-bg-color;//左侧菜单字体颜色-激活-深红色
+//@home-bg-color:#fdfcf5; //home模块背景色
+//@home-color-device:#e0d479; //home模块 设备颜色
+//@home-color-satisfied:#16A481;  //home模块 满意度笑脸颜色
+//@home-color-border:#F5EFC0;//home模块 边框颜色
+//@visit-level-color:#7a051e;  //来访客户 等级颜色
+//@visit-info-color:#000000;   //来访客户 信息颜色
+//@point-color-outside:#e0d479;   //渐变点-外侧
+//@point-color-inside:#f9f7bd; //渐变点-内侧
+//@monitor-border-color:#E6E6E6;//排队监控边框色
+
+
+
+
+// @theme-color : red;
+.theme-color{
+  color:@theme-color;
+}
+.theme-background-color{
+  background-color:@theme-color-bg;
+  color: @title-color-font;
+}
+.theme-border-color{
+  border:1px solid @theme-color;
+}
+.blue-header{
+  background-color: @theme-color-bg!important;
+  border-bottom-color: @theme-color-bg!important;
+  .vux-header-back{
+    color:@title-color-font!important;
+  }
+   .vux-header-title{
+     color:@title-color-font!important;
+  }
+}

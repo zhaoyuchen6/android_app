@@ -1,0 +1,49 @@
+.aui-check {
+  position: absolute;
+  left: -9999em;
+  // radio
+  .aui-cells_radio & {
+      &:checked {
+          & + .aui-icon-checked {
+              &:before {
+                  display: block;
+                  content: '\EA08';
+                  color: @radio-checked-icon-color;
+                  font-size: 16px;
+              }
+          }
+      }
+  }
+  // checkbox
+  .aui-cells_checkbox & {
+    &:checked {
+        & + .aui-icon-checked {
+          &:before {
+              content: '\EA06';
+              color: #09BB07;
+          }
+        }
+    }
+  }
+}
+  .aui-checker-item {
+    display: inline-block;
+  }
+
+  .aui-checker-item-default{
+    border: 1px solid #ececec;
+    padding: 5px 15px;
+  }
+  .aui-checker-item-selected-default {
+    border: 1px solid green;
+  }
+  .aui-checker-item-selected-success {
+    border: 1px solid #ff4a00;
+  }
+  .aui-checker-item-selected-success-icon {
+    background: #ffffff url(../assets/checker/active.png) no-repeat right bottom;
+    border-color: #ff4a00;
+  }
+  .aui-checker-item-disabled-default {
+    color: #999;
+  }

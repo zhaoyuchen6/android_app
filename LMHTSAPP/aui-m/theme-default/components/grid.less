@@ -1,0 +1,11 @@
+.aui-grid{
+    position: relative;
+    overflow: hidden;
+
+    &:before {
+        .setTopLine(@grid-border-color);
+    }
+    &:after {
+        .setLeftLine(@grid-border-color);
+    }
+}

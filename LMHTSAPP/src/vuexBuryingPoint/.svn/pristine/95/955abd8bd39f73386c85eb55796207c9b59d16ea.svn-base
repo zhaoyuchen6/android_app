@@ -1,0 +1,287 @@
+/**
+ * Created by zhaoyuchen on 2018/08/08.
+ * 数据埋点,native组件事件监听
+ */
+export default {
+  mounted() {
+    if (window.bFlag) {
+      this._vnode.children && this._vnode.children.forEach(element => {
+        var tag = element.tag;
+        if (tag === undefined) return;
+        if (tag === "input") {
+          getInputTagData(element);
+        } else if (tag === "textarea") {
+          getTextareaTagData(element);
+        } else if (tag === "select") {
+          getSelectTagData(element);
+        } else if (tag === "a") {
+          getLinkTagData(element);
+        } else if (element.data && element.data.on && element.data.on.click) {
+          getClickEventTagData(element);
+        } else if (element.data && element.data.on && element.data.on["~click"]) {
+          getClickOnceEventTagData(element);
+        }
+        element.children && getChildrenTag(element.children);
+      });
+    }
+  }
+};
+
+function getChildrenTag(childrens) {
+  for (let i = 0; i < childrens.length; i++) {
+    if (childrens[i].tag === "input") {
+      getInputTagData(childrens[i]);
+    } else if (childrens[i].tag === "textarea") {
+      getTextareaTagData(childrens[i]);
+    } else if (childrens[i].tag === "select") {
+      getSelectTagData(childrens[i]);
+    } else if (childrens[i].tag === "a") {
+      getLinkTagData(childrens[i]);
+    } else if (childrens[i].data && childrens[i].data.on && childrens[i].data.on.click) {
+      getClickEventTagData(childrens[i]);
+    } else if (childrens[i].data && childrens[i].data.on && childrens[i].data.on["~click"]) {
+      getClickOnceEventTagData(childrens[i]);
+    } else if (childrens[i].children) {
+      getChildrenTag(childrens[i].children);
+      // if (childrens[i].children._isVList === true) {
+      //   console.log("elm:", childrens[i].elm.children[0]);
+      // }
+    }
+  }
+}
+
+function getInputTagData(VNode) {
+  //监听blur事件
+  if (VNode.data && VNode.data.on && VNode.data.on.blur) {
+    let myFn = VNode.data.on.blur.fns;
+    VNode.data.on.blur.fns = function ($event) {
+      if (window.bFlag) {
+        getNativeTagData(VNode, "blur", "文本框赋值");
+      }
+      myFn();
+    };
+  } else {
+    if (VNode.data &&  VNode.data.attrs && VNode.data.attrs.type) {
+      if (VNode.data.attrs.type === "check" || VNode.data.attrs.type === "radio") {
+        VNode.elm.addEventListener("blur", function() {
+          if (window.bFlag) {
+            getNativeTagData(VNode, "blur", "单(复)选框勾选");
+          }
+        });
+      }
+    }
+  }
+  //给组件添加focus事件，用于获取组件聚焦时时间
+  VNode.elm.addEventListener("focus", function() {
+    if (window.bFlag) {
+      window.focusTime = new Date();
+      console.log("nativeTime:", window.focusTime);
+    }
+  });
+  //给组件添加mousedown事件，获取鼠标点击时，鼠标坐标
+  VNode.elm.addEventListener("mousedown", function($event) {
+    if (window.bFlag) {
+      var eve = event || window.event;
+      window.coordinates['relativeScreen'] = eve.screenX + "," + eve.screenY;
+      window.coordinates['relativeClient'] = eve.clientX + "," + eve.clientY;
+      window.coordinates['relativeControl'] = eve.offsetX + "," + eve.offsetY;
+      $event.cancelBubble = true;
+      console.log("c2", window.coordinates);
+    }
+  });
+}
+
+function getTextareaTagData(VNode) {
+  //监听blur事件
+  if (VNode.data && VNode.data.on && VNode.data.on.blur) {
+    let myFn = VNode.data.on.blur.fns;
+    VNode.data.on.blur.fns = function ($event) {
+      if (window.bFlag) {
+        getNativeTagData(VNode, "blur", "文本域赋值");
+      }
+      myFn();
+    };
+  }
+  //给组件添加focus事件，用于获取组件聚焦时时间
+  VNode.elm.addEventListener("focus", function() {
+    if (window.bFlag) {
+      window.focusTime = new Date();
+      console.log("nativeTime:", window.focusTime);
+    }
+  });
+  //给组件添加mousedown事件，获取鼠标点击时，鼠标坐标
+  VNode.elm.addEventListener("mousedown", function($event) {
+    if (window.bFlag) {
+      var eve = event || window.event;
+      window.coordinates['relativeScreen'] = eve.screenX + "," + eve.screenY;
+      window.coordinates['relativeClient'] = eve.clientX + "," + eve.clientY;
+      window.coordinates['relativeControl'] = eve.offsetX + "," + eve.offsetY;
+      console.log("c2", window.coordinates);
+      $event.cancelBubble = true;
+    }
+  });
+}
+
+function getSelectTagData(VNode) {
+  //监听change事件
+  if (VNode.data && VNode.data.on && VNode.data.on.change) {
+    let myFn = VNode.data.on.change.fns;
+    VNode.data.on.change.fns = function ($event) {
+      if (window.bFlag) {
+        getNativeTagData(VNode, "change", "下拉框赋值");
+      }
+      myFn($event);
+    };
+  }
+  //给组件添加focus事件，用于获取组件聚焦时时间
+  VNode.elm.addEventListener("focus", function() {
+    if (window.bFlag) {
+      window.focusTime = new Date();
+      console.log("nativeTime:", window.focusTime);
+    }
+  });
+  //给组件添加mousedown事件，获取鼠标点击时，鼠标坐标
+  VNode.elm.addEventListener("mousedown", function($event) {
+    if (window.bFlag) {
+      var eve = event || window.event;
+      window.coordinates['relativeScreen'] = eve.screenX + "," + eve.screenY;
+      window.coordinates['relativeClient'] = eve.clientX + "," + eve.clientY;
+      window.coordinates['relativeControl'] = eve.offsetX + "," + eve.offsetY;
+      console.log("c2", window.coordinates);
+      $event.cancelBubble = true;
+    }
+  });
+}
+
+function getLinkTagData(VNode) {
+  //addEventListener(VNode, "mousedown");
+  if (VNode.data && VNode.data.attrs && VNode.data.attrs.href) {
+    VNode.elm.addEventListener("click", function() {
+      if (window.bFlag) {
+        getNativeTagData(VNode, "click", "点击链接");
+      }
+    });
+  } else if (VNode.data && VNode.data.on && VNode.data.on.click) {
+    VNode.elm.addEventListener("click", function() {
+      if (window.bFlag) {
+        getNativeTagData(VNode, "click", "点击链接");
+      }
+    });
+  }
+  //给组件添加mousedown事件，获取鼠标点击时，鼠标坐标，鼠标点击时间
+  VNode.elm.addEventListener("mousedown", function($event) {
+    if (window.bFlag) {
+      window.focusTime = new Date();
+      console.log("nativeTime:", window.focusTime);
+      var eve = event || window.event;
+      window.coordinates['relativeScreen'] = eve.screenX + "," + eve.screenY;
+      window.coordinates['relativeClient'] = eve.clientX + "," + eve.clientY;
+      window.coordinates['relativeControl'] = eve.offsetX + "," + eve.offsetY;
+      console.log("c2", window.coordinates);
+      $event.cancelBubble = true;
+    }
+  });
+}
+
+function getClickEventTagData(VNode) {
+  if (VNode.context != undefined && VNode.context.$options._componentTag != "aui-date-picker") {
+    var tag = VNode.tag;
+    //监听click事件
+    if (tag === "button") {
+      let myFn = VNode.data.on.click.fns;
+      VNode.data.on.click.fns = function ($event) {
+        if (window.bFlag) {
+          getNativeTagData(VNode, "click",  "点击按钮");
+        }
+        myFn();
+      };
+    } else {
+      VNode.elm.addEventListener("click", function() {
+        if (window.bFlag) {
+          getNativeTagData(VNode, "click", "点击视图");
+        }
+      });
+    }
+    //给组件添加mousedown事件，获取鼠标点击时，鼠标坐标，鼠标点击时间
+    VNode.elm.addEventListener("mousedown", function($event) {
+      if (window.bFlag) {
+        window.focusTime = new Date();
+        console.log("nativeTime:", window.focusTime);
+        var eve = event || window.event;
+        window.coordinates['relativeScreen'] = eve.screenX + "," + eve.screenY;
+        window.coordinates['relativeClient'] = eve.clientX + "," + eve.clientY;
+        window.coordinates['relativeControl'] = eve.offsetX + "," + eve.offsetY;
+        console.log("c2", window.coordinates);
+        $event.cancelBubble = true;
+      }
+    });
+  }
+}
+
+function getClickOnceEventTagData(VNode) {
+  //监听click事件
+  let myFn = VNode.data.on["~click"].fns;
+  VNode.data.on["~click"].fns = function ($event) {
+    if (window.bFlag) {
+      getNativeTagData(VNode, "click", "点击视图");
+    }
+    myFn($event);
+  };
+  //给组件添加mousedown事件，获取鼠标点击时，鼠标坐标，鼠标点击时间
+  VNode.elm.addEventListener("mousedown", function($event) {
+    if (window.bFlag) {
+      window.focusTime = new Date();
+      console.log("nativeTime:", window.focusTime);
+      var eve = event || window.event;
+      window.coordinates['relativeScreen'] = eve.screenX + "," + eve.screenY;
+      window.coordinates['relativeClient'] = eve.clientX + "," + eve.clientY;
+      window.coordinates['relativeControl'] = eve.offsetX + "," + eve.offsetY;
+      console.log("c2", window.coordinates);
+      $event.cancelBubble = true;
+    }
+  });
+}
+
+function getNativeTagData(VNode, eventName, eventDesc) {
+  console.log("事件：", eventName);
+  console.log("组件：", VNode.tag);
+  console.log("元素：", VNode);
+  var isTradePage = VNode.context;
+  while (isTradePage != undefined && isTradePage.$options != undefined && isTradePage.$options._componentTag != undefined) {
+    isTradePage = isTradePage.$parent;
+  }
+  if (isTradePage != undefined && isTradePage.constructor.extendOptions.name != undefined &&  isTradePage.constructor.extendOptions.name != "trade-menu") {
+    //配置组件信息
+    var pageControlInfo = {};
+    pageControlInfo['controlNum'] = "";
+    if (VNode.tag.indexOf("vue-component") != -1) {
+      pageControlInfo['controlType'] = VNode.componentOptions.tag;
+    } else {
+      pageControlInfo['controlType'] = VNode.tag;
+    }
+    //pageControlInfo['controlName'] = VNode.elm.innerText;
+    pageControlInfo['controlName'] = VNode.elm.textContent.trim().split(" ")[0];
+    pageControlInfo['controlCode'] = "";
+    if (VNode.data != undefined && VNode.data.directives != undefined && VNode.data.directives[0] != undefined && VNode.data.directives[0].expression != undefined) {
+      pageControlInfo['controlCode'] = VNode.data.directives[0].expression;
+    }
+    pageControlInfo['eventType'] = eventName;
+    pageControlInfo['eventDesc'] = eventDesc;
+    pageControlInfo['handleTime'] = window.focusTime === 0 ? 0.1 : (new Date() - window.focusTime) / 1000;
+    pageControlInfo['controlValue'] = VNode.data.model === undefined ? "" : VNode.data.model.value;
+    var coordinates = {};
+    coordinates['relativeScreen'] = window.coordinates['relativeScreen'];
+    coordinates['relativeClient'] = window.coordinates['relativeClient'];
+    coordinates['relativeControl'] = window.coordinates['relativeControl'];
+    pageControlInfo['coordinates'] = coordinates;
+
+    var name = isTradePage.constructor.extendOptions.name;
+    for (var i = window.tradeInfo['tradePageList'].length - 1; i >= 0; i--) {
+      if (name === window.tradeInfo['tradePageList'][i]['pageName']) {
+        pageControlInfo['controlNum'] = window.tradeInfo['tradePageList'][i]['pageControlList'].length + 1;
+        window.tradeInfo['tradePageList'][i]['pageControlList'].push(pageControlInfo);
+        break;
+      }
+    }
+  }
+}

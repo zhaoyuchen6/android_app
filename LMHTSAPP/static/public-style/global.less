@@ -1,0 +1,84 @@
+/*自定义公共class*/
+#app {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+}
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  -moz-user-select: none; /*火狐*/
+    -webkit-user-select: none; /*webkit浏览器*/
+    -ms-user-select: none; /*IE10*/
+    -khtml-user-select: none; /*早期浏览器*/
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+img{
+  content:normal!important;
+}
+.right{
+  float: right;
+}
+.left{
+  float: left;
+}
+.clear{
+  clear:both;
+}
+.bg-blue{
+  background: #10AEFF;
+}
+.blue-color{
+  color:#4495FE;
+}
+.aui-cells:after,.aui-cells:before{
+  border: none;
+}
+.aui-grid:after,.aui-grid:before{
+  border: none;
+}
+.btn-orange{
+  background-color: #ffa21a;
+  color:#fff;
+  .style{
+    background-color: #F2CE9B!important;
+    color:#fff!important;
+  }
+  &:disabled{
+    .style;
+  }
+  &:active{
+    .style;
+  }
+
+}
+.btn-gray{
+  background-color: #8e8e8e;
+  color:#fff;
+  .style{
+    background-color: #c4c4c4!important;
+    color:#fff!important;
+  }
+  &:disabled{
+    .style;
+  }
+  &:active{
+    .style;
+  }
+}
+//动效
+@keyframes shake {
+  0%{
+    transform: rotate(-2deg);
+  }
+  50%{
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(2deg);
+  }
+}

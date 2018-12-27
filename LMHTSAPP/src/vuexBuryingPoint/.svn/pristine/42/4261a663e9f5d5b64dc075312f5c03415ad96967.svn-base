@@ -1,0 +1,272 @@
+/**
+ * Created by zhaoyuchen on 2018/08/08.
+ * 数据埋点：获取设备信息、交易信息、页面信息
+ */
+import { Ameba } from 'awp-lib-ameba-js';
+export default {
+  install(Vue, pluginOption = {}) {
+    window.bFlag = false;
+    window.Data = {};
+    //加载设备信息
+    window.deviceInfo = {};
+    window.cordova.exec(result => window.getDeviceInfo(result), error => console.error(error), 'SessionHelper', 'GetSessionData');
+    window.getDeviceInfo = function(result) {
+      console.log(result);
+      window.deviceInfo['deviceNum'] = result.Client.DeviceInfo.DeviceNum;//设备编码
+      //window.deviceInfo['deviceCode'] = result.Client.DeviceInfo.DvcNum;//设备代码
+      window.deviceInfo['deviceType'] = result.Client.DeviceInfo.DeviceType;//设备类型
+      window.deviceInfo['tranTellerNo'] = result.Client.DeviceInfo.TranTellerNo;//交易柜员号
+      window.deviceInfo['tdgBrah'] = result.Client.DeviceInfo.TdgBrah;//机构号
+      //window.deviceInfo['tdgBrahName'] = result.Client.DeviceInfo.TdgBrahName;//机构名称    
+    };
+    window.Data['deviceInfo'] = window.deviceInfo;
+    window.Data['userData'] = {};
+
+    //交易事件监听
+    window.tradeEventListeners  = function(eventName, item) {
+      if (eventName === "clickTradeOfClient") { //开始交易
+        window.bFlag = true;
+        if (Ameba.session.Customer.CardNo === null) {
+          window.Data['userData'] = {};
+          window.userData = {};
+          window.userInfo = {};
+          var newDate = new Date();
+          var fullYear = newDate.getFullYear();
+          var month = (newDate.getMonth() + 1) < 10 ? "0" + (newDate.getMonth() + 1) : (newDate.getMonth() + 1);
+          var date = newDate.getDate() < 10 ? "0" + newDate.getDate() : newDate.getDate();
+          window.userInfo['handleDate'] = fullYear + "" + month + "" + date;
+          window.userInfo['loginTime'] = "";
+          window.userInfo['quitTime'] = "";
+          window.userData['userInfo'] = window.userInfo;
+          window.userData['userTradeList'] = [];
+
+          window.tradeInfo = {};
+          window.tradeInfo['tradeNum'] = 1;
+          window.tradeInfo['tradeName'] = item[0];
+          window.tradeInfo['tradeCode'] = item[2];
+          window.tradeInfo['tradeStartTime'] = new Date();
+          window.tradeInfo['tradeEndTime'] = "";
+          window.tradeInfo['tradeDuration'] = "";
+          window.tradeInfo['tradeStatus'] = "";
+          window.tradeInfo['tradePageList'] = [];
+          window.userData['userTradeList'].push(window.tradeInfo);
+          window.Data['userData'] = window.userData;
+        } else {
+          window.tradeInfo = {};
+          window.tradeInfo['tradeNum'] = window.userData['userTradeList'].length + 1;
+          window.tradeInfo['tradeName'] = item[0];
+          window.tradeInfo['tradeCode'] = item[2];
+          window.tradeInfo['tradeStartTime'] = new Date();
+          window.tradeInfo['tradeEndTime'] = "";
+          window.tradeInfo['tradeDuration'] = "";
+          window.tradeInfo['tradeStatus'] = "";
+          window.tradeInfo['tradePageList'] = [];
+          window.userData['userTradeList'].push(window.tradeInfo);
+        }
+      } else if (eventName === "tradeFinishOnClient" || eventName === "abortTrade" || eventName === "tradeTimeout") { //正常完成交易、中止交易、超时交易
+        var tradeEndTime = new Date();
+        var tradeStartTime = window.tradeInfo['tradeStartTime'];
+        window.tradeInfo['tradeDuration'] = (tradeEndTime - tradeStartTime) / 1000;
+        window.tradeInfo['tradeStartTime'] = timeFormatConversion(tradeStartTime.getHours(), tradeStartTime.getMinutes(), tradeStartTime.getSeconds());
+        window.tradeInfo['tradeEndTime'] = timeFormatConversion(tradeEndTime.getHours(), tradeEndTime.getMinutes(), tradeEndTime.getSeconds());
+        window.tradeInfo['tradeStatus'] = eventName;
+        //删除没有组件操作的页面，并对页面重新排序
+        for (var i = window.tradeInfo['tradePageList'].length - 1; i >= 0; i--) {
+          if (window.tradeInfo['tradePageList'][i]['pageControlList'].length === 0) {
+            window.tradeInfo['tradePageList'].splice(i, 1);
+          }
+        }
+        for (var j = 0; j < window.tradeInfo['tradePageList'].length; j++) {
+          window.tradeInfo['tradePageList'][j]['pageNum'] = j + 1;
+        }
+        console.log("交易结束：", window.Data);
+      }
+    };
+    window.ExportData = function() {
+      var newDate = new Date();
+      var fullYear = newDate.getFullYear();
+      var month = (newDate.getMonth() + 1) < 10 ? "0" + (newDate.getMonth() + 1) : (newDate.getMonth() + 1);
+      var date = newDate.getDate() < 10 ? "0" + newDate.getDate() : newDate.getDate();
+      var path1 = fullYear + "" + month + "" + date;
+      var path2 = new Date().getTime();
+      var path = "D:\\BuryingPoint\\" + path1 + "\\" + path2 + ".json";
+      cordova.exec(function (result) {
+        console.log(result);
+      }, function (error) {
+        console.error(error);
+      }, 'FileUtils', 'WriteAllText', [path, window.Data]);
+    };
+    window.ExportData1 = function() {
+      window.data = {};
+      var latticName = "网点名称";
+      var latticCode = "网点代码";
+      var deviceNum = window.deviceInfo['deviceNum'];
+      var deviceType = window.deviceInfo['deviceType'];
+      var tranTellerNo = window.deviceInfo['tranTellerNo'];
+      var tagBrah = window.deviceInfo['tdgBrah'];
+      if (window.Data['userData']['userInfo'] != undefined) {
+        var custNo = window.Data['userData']['userInfo']['custNo'];
+        var custType = window.Data['userData']['userInfo']['custType'];
+        var custLevel = window.Data['userData']['userInfo']['custLevel'];
+        var sex = window.Data['userData']['userInfo']['sex'];
+        var age = window.Data['userData']['userInfo']['age'];
+        var cardNo = window.Data['userData']['userInfo']['cardNo'];
+        var cardType = window.Data['userData']['userInfo']['cardType'];
+        var idNo = window.Data['userData']['userInfo']['idNo'];
+        var idName = window.Data['userData']['userInfo']['idName'];
+        var handleDate = window.Data['userData']['userInfo']['handleDate'];
+        window.data['userInfo'] = latticName + "#" + latticCode + "#" + deviceNum + "#" + deviceType + "#" + tranTellerNo + "#" + tagBrah + "#" +
+        custNo + "#" + custType + "#" + custLevel + "#" + sex + "#" + age + "#" + cardNo + "#" + cardType + "#" + idNo + "#" + idName + "#" + handleDate;
+        window.data['tradeInfoList'] = [];
+        if (window.Data['userData']['userTradeList'] != undefined) {
+          for (var i = 0; i < window.Data['userData']['userTradeList'].length; i++) {
+            var tradeInfo = window.Data['userData']['userTradeList'][i];
+            var tradeData = {};
+            tradeData['tradeInfo'] = tradeInfo['tradeNum'] + "#" + tradeInfo['tradeName'] + "#" + tradeInfo['tradeCode'] + "#" + tradeInfo['tradeStartTime'] +
+            "#" + tradeInfo['tradeEndTime'] + "#" + tradeInfo['tradeDuration'] + "#" + tradeInfo['tradeStatus'] + "#" + tradeInfo['tradeFlow'];
+            tradeData['pageInfoList'] = [];
+            for (var j = 0; j < tradeInfo['tradePageList'].length; j++) {
+              var pageInfo = tradeInfo['tradePageList'][j];
+              var pageData = {};
+              pageData['pageInfo'] = pageInfo['pageNum'] + "#" + pageInfo['pageName'] + "#" + pageInfo['pageStartTime'] + "#" + pageInfo['pageEndTime'] + "#" + pageInfo['pageDuration'];
+              pageData['controlInfoList'] = [];
+              for (var k = 0; k < pageInfo['pageControlList'].length; k++) {
+                var controlInfo = pageInfo['pageControlList'][k];
+                var coordinates = controlInfo['coordinates']['relativeScreen'] + ";" + controlInfo['coordinates']['relativeClient'] + ";" + controlInfo['coordinates']['relativeControl'];
+                var controlData = controlInfo['controlNum'] + "#" + controlInfo['controlType'] + "#" + controlInfo['controlName'] + "#" + controlInfo['controlCode'] +
+                "#" + controlInfo['controlValue'] + "#" + controlInfo['eventType'] + "#" + controlInfo['eventDesc'] + "#" + controlInfo['handleTime'] + "#" + coordinates;
+                pageData['controlInfoList'].push(controlData);
+              }
+              tradeData['pageInfoList'].push(pageData);
+            }
+            window.data['tradeInfoList'].push(tradeData);
+          }
+        }
+        var newDate = new Date();
+        var fullYear = newDate.getFullYear();
+        var month = (newDate.getMonth() + 1) < 10 ? "0" + (newDate.getMonth() + 1) : (newDate.getMonth() + 1);
+        var date = newDate.getDate() < 10 ? "0" + newDate.getDate() : newDate.getDate();
+        var path1 = fullYear + "" + month + "" + date;
+        var path2 = new Date().getTime();
+        var path = "D:\\BuryingPoint\\" + path1 + "\\" + path2 + ".json";
+        cordova.exec(function (result) {
+          console.log(result);
+        }, function (error) {
+          console.error(error);
+        }, 'FileUtils', 'WriteAllText', [path, window.data]);
+      }
+    };
+  },
+
+  mounted() {
+    if (this.$options != undefined && this.$options._componentTag === undefined) {
+      if (this.constructor != undefined && this.constructor.extendOptions != undefined && this.constructor.extendOptions.name != undefined) {
+        if (this.constructor.extendOptions.name === "trade-menu") {
+          window.bFlag = false;
+        }
+        if (window.bFlag) {
+          var name = this.constructor.extendOptions.name;
+          console.log("加载页面：", name);
+          if (name != "step-page-navigator") {
+            window.tradePageInfo = {};
+            window.tradePageInfo['pageNum'] = "";
+            window.tradePageInfo['pageName'] = name;
+            window.tradePageInfo['pageStartTime'] = new Date();
+            window.tradePageInfo['pageEndTime'] = "";
+            window.tradePageInfo['pageDuration'] = "";
+            window.tradePageInfo['pageControlList'] = [];
+            window.tradeInfo['tradePageList'].push(window.tradePageInfo);
+          }
+        }
+      }
+    }
+    //获取用户信息
+    if (window.bFlag && this.$options != undefined && this.$options.propsData != undefined && this.$options.propsData.session != undefined) {
+      console.log("session", this.$options.propsData.session);
+      window.userInfo['cardNo'] = this.$options.propsData.session.Customer.CardNo;//卡号
+      window.userInfo['cardType'] = this.$options.propsData.session.Customer.CardType;//卡类型 
+      window.userInfo['idType'] = dataConversion("IDType", this.$options.propsData.session.Customer.IDType);//身份证件类型
+      window.userInfo['idNo'] = this.$options.propsData.session.Customer.IDNo;//身份证件号码
+      window.userInfo['idName'] = this.$options.propsData.session.Customer.IDName;//身份证件名称
+      window.userInfo['sex'] = dataConversion("Sex", this.$options.propsData.session.Customer.Sex);//性别
+      window.userInfo['age'] = dataConversion("Age", this.$options.propsData.session.Customer.IDBirthday);//年龄
+      window.userInfo['custNo'] = this.$options.propsData.session.Customer.CustNo;//客户号
+      window.userInfo['custType'] = dataConversion("CustType", this.$options.propsData.session.Customer.CustType);//客户类型
+      window.userInfo['custLevel'] = this.$options.propsData.session.Customer.CustLevel;//客户等级
+      window.userInfo['custName'] = this.$options.propsData.session.Customer.CustName;//客户名称   
+    }
+  },
+
+  destroyed() {
+    if (this.$options != undefined && this.$options._componentTag === undefined) {
+      if (window.bFlag && this != undefined && this.constructor != undefined && this.constructor.extendOptions != undefined && this.constructor.extendOptions.name != undefined) {
+        var name = this.constructor.extendOptions.name;
+        console.log("销毁页面：", name);
+        for (var i = window.tradeInfo['tradePageList'].length - 1; i >= 0; i--) {
+          if (name === window.tradeInfo['tradePageList'][i]['pageName']) {
+            var pageEndTime = new Date();
+            var pageStartTime = window.tradeInfo['tradePageList'][i]['pageStartTime'];
+            if (window.tradeInfo['tradePageList'][i]['pageEndTime'] === "") {
+              window.tradeInfo['tradePageList'][i]['pageDuration'] = (pageEndTime - pageStartTime) / 1000;
+              window.tradeInfo['tradePageList'][i]['pageStartTime'] = timeFormatConversion(pageStartTime.getHours(), pageStartTime.getMinutes(), pageStartTime.getSeconds());
+              window.tradeInfo['tradePageList'][i]['pageEndTime'] = timeFormatConversion(pageEndTime.getHours(), pageEndTime.getMinutes(), pageEndTime.getSeconds());
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+//时间格式转换
+function timeFormatConversion(hours, minutes, seconds) {
+  hours =  hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
+  return hours + "" + minutes + "" + seconds;
+}
+
+//数据转化
+function dataConversion(dataType, data) {
+  var custType = ["1-个人客户", "2-对公客户"];
+  var sex = ["0-未知的性别", "1-男", "2-女", "9-未说明的性别"];
+  var idType = ["10100-居民身份证", "10200-临时身份证", "10300-户口簿", "10400-护照", "10501-士兵证", "10502-军官证",
+    "10503-文职干部证", "10504-军官退休证", "10505-文职干部退休证", "10601-武警士兵证", "10602-警官证", "10603-武警文职干部证",
+    "10604-武警军官退休证", "10605-武警文职干部退休证", "10700-港澳台居民有效身份证", "10701-港澳台居民来往内地通行证",
+    "10702-港澳居民身份证", "10703-台湾居民来往大陆通行证", "10705-台湾居民身份证", "10900-外国人永久居留证"];
+  var value = null;
+  if (dataType === "CustType") {
+    for (var i = 0; i < custType.length; i++) {
+      if (data === custType[i].substring(0, 1)) {
+        value = custType[i];
+        break;
+      }
+    }
+    return value;
+  } else if (dataType === "Sex") {
+    for (var j = 0; j < sex.length; j++) {
+      if (data === sex[j].substring(0, 1)) {
+        value = sex[j];
+        break;
+      }
+    }
+  } else if (dataType === "IDType") {
+    for (var k = 0; k < idType.length; k++) {
+      if (data === idType[k].substring(0, 5)) {
+        value = idType[k];
+        break;
+      }
+    }
+    return value;
+  } else if (dataType === "Age") {
+    if (data != null && data != "" && data != undefined) {
+      var birthYear = data.substring(0, 4);
+      var nowYear = new Date().getFullYear();
+      if (nowYear > birthYear) {
+        value = nowYear - birthYear;
+      }
+    }
+    return value;
+  }
+}
